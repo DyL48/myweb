@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<meta charset="UTF-8">
+		<title></title>
+		<style type="text/css">
+			div {
+				width: 100px;
+				height: 100px;
+				background: red;
+				background-size: cover;
+				position: absolute;
+				opacity: 0.3;
+				filter: alpha(opacity=30);
+				box-shadow: 0px 0px 10px #FFFF00;
+			}
+		</style>
+		<script type="text/javascript">
+			function getStyle(obj, attr) {
+				return obj.currentStyle ? obj.currentStyle[attr] : getComputedStyle(obj)[attr];
+			}
+
+			function startMove(obj, json, endFn) {
+				//设置iCur变量为当前的位置
+				var iCur = 0;
+				//定义一个速度的初值
+				var speed = 0;
+				//清除定时器
+				clearInterval(obj.timer);
+
+				//开启定时器
+				obj.timer = setInterval(function() {
+					//设置一个开关为真
+					var onOff = true;
+
+					//遍历json
+					for(var attr in json) {
+						//如果当前的属性名是透明度							
+						if(attr == "opacity") {
+							//通过这个方式获取当前的透明度值，乘以100，转成整数进行计算，（小数有精度问题）
+							iCur = Math.round(getStyle(obj, "opacity") * 100);
+						} else {
+							//正常的其他属性，通过这种方式直接获取
+							iCur = parseInt(getStyle(obj, attr));
+						}
+						//要运动的目标点，找对应json里面的属性值
+						var target = json[attr];
+						//让速度等于目标点位置-当前的位置/10 得到一个每次变化的值且这个值越来越小，逐渐接近目标点
+						speed = (target - iCur) / 10;
+						//小数的js计算永远无法到达目标点，所以要处理一下
+						speed = (target - iCur) > 0 ? Math.ceil(speed) : Math.floor(speed);
+						//如果当前值不等于目标点
+						if(iCur != target) {
+							//把开端改为假
+							onOff = false;
+							//如果当前属性等于透明度
+							if(attr == "opacity") {
+								//将变化后的值，赋给obj对象对应的透明度，（IE下透明度实现写法不一样）
+								obj.style.opacity = (iCur + speed) / 100;
+								obj.style.filter = "alpha(opacity=" + iCur + speed + ")";
+							} else {
+								//否则按照常规的属性赋值方式给回去
+								obj.style[attr] = iCur + speed + "px";
+							}
+
+						}
+
+					}
+					//每一次循环完毕后，开关是否为真
+					if(onOff) {
+						//如果为真，清楚定时器
+						clearInterval(obj.timer);
+						endFn && endFn();
+					}
+
+				}, 30)
+			}
+
+			window.onload = function() {
+				var aDiv = document.getElementsByTagName("div");
+				var arrImg = [
+					"img/1.jpg",
+					"img/2.jpg",
+					"img/3.jpg",
+					"img/4.jpg",
+					"img/5.jpg",
+					"img/6.jpg",
+					"img/7.jpg",
+					"img/8.jpg",
+					"img/9.jpg"
+				            ]
+				
+				for(var i = 0; i < aDiv.length; i++) {
+					var oLeft = 150 + 120 * (i % 3);
+					var oTop = 150 + 120 * parseInt(i / 3);
+					aDiv[i].style.left = oLeft + "px";
+					aDiv[i].style.top = oTop + "px";
+					aDiv[i].style.backgroundImage = "url("+arrImg[i]+")";
+					//aDiv[i].style.border="solid 2px #fff";
+
+
+				function fn(i, oLeft, oTop) {
+					aDiv[i].onmouseover = function() {
+						this.style.zIndex = "1";
+						startMove(this, {
+							width: 150,
+							height: 150,
+							left: oLeft - 25,
+							top: oTop - 25,
+							opacity: 100
+
+						})
+					}
+					aDiv[i].onmouseout = function() {
+						this.style.zIndex = "0";
+						startMove(this, {
+							width: 100,
+							height: 100,
+							left: oLeft,
+							top: oTop,
+							opacity: 30
+
+						})
+					}
+
+				}
+				fn(i, oLeft, oTop);
+				}
+				
+				
+
+			}
+		</script>
+
+	</head>
+
+	<body style="background:#000">
+		<div></div>
+		<div></div>
+		<div></div>
+		<div></div>
+		<div></div>
+		<div></div>
+		<div></div>
+		<div></div>
+		<div></div>
+
+	</body>
+
+</html>
